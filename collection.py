@@ -176,3 +176,15 @@ class Collection:
         # Reverse the order if descending.
         if reverse:
             self.reverse()
+
+    #
+    # Create search a field for each resource by copying the defined attribute.
+    # The search field can then be used instead of finding the attribute in the FHIR(json).
+    # Use this function for: for <collection> add <attribute>
+    #
+    def create_search_attribute(self, attribute):
+        for resource in self.resources.data:
+            resource.search_attribute = get_attribute_value(resource, attribute)
+
+    def create_search_segment_attribute(self, segment, attribute):
+        pass
