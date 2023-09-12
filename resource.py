@@ -8,7 +8,6 @@ import uuid
 
 from query import get_attribute_value, get_segment_attribute_value
 from schema import Schema
-import json
 
 # Return the length of resource data
 length = 0
@@ -25,19 +24,22 @@ class Resource:
         self.type = resource_type
         self.data = ""
         self.state = Schema.LOADED
+        self.search_field = ""
 
     def __str__(self):
         if length:
             return str(len(self.data)) + ', ' + str(self.uuid) + ', ' + self.type + ', ' + self.data
         else:
-            return str(self.uuid) + ', ' + ', ' + self.type + ', ' + self.data
+            return str(self.uuid) + ', ' + str(self.search_field) + ', ' + self.type + ', ' + self.data
 
     # Find the attribute value in the FHIR (json).
+    # Required for order command.
     def get_attribute_value(self, attribute):
         att = get_attribute_value(self.data, attribute)
         return att
 
     # Find the attribute in the first segment of FHIR (json).
+    # required for order command.
     def get_segment_attribute_value(self, segment, attribute):
         att = get_segment_attribute_value(self.data, segment, attribute)
 
@@ -50,69 +52,6 @@ class Resource:
             return True
         except FileNotFoundError:
             return False
-
-    # Get an attribute's value.
-    def get_attribute_value(self, attribute):
-        try:
-            j = json.loads(self.data)
-            x = str(j[attribute]).replace("\'", "\"").replace("[", "").replace("]", "")
-            return x
-        except KeyError:
-            return None
-
-    # Get a segment attribute value.
-    def get_segment_attribute_value(self, segment, attribute):
-        try:
-            part = self.get_attribute_value(segment)
-            t = Resource("Segment")
-            t.data = part
-            result = t.get_attribute_value(attribute)
-            return result
-        except KeyError:
-            return None
-
-    # Test and attribute value.
-    def test_attribute_value(self, attribute, operator, value):
-        try:
-            j = json.loads(self.data)
-            x = j[attribute]
-            y = value
-            # If the attribute is a number then make y a number.
-            if type(x) != str:
-                if value.isnumeric():
-                    y = float(value)
-
-            if operator == "=":
-                return x == y
-            if operator == "!=":
-                return x != y
-            elif operator == ">":
-                return x > y
-            elif operator == ">=":
-                return x >= y
-            elif operator == "<":
-                return x < y
-            elif operator <= y:
-                return x <= y
-            else:
-                return None
-
-        except KeyError:
-            return None
-
-    # Test a segment attribute value.
-    def test_segment_attribute_value(self, segment, attribute, value):
-        try:
-            part = self.get_attribute_value(segment)
-            t = Resource("Segment")
-            t.data = part
-            result = t.get_attribute_value(attribute)
-            if result == value:
-                return True
-            else:
-                return False
-        except KeyError:
-            return None
 
     # Find a string in a resource.
     def search(self, qry):
