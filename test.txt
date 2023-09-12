@@ -57,7 +57,17 @@ selectDistinct * from Patient where id = 5
 reverse Patient
 selectDistinct * from Patient where id = 5
 
+# Now try the orderFast command
+
+# Try the following
+select * from Patient where id = 1
+# copy the uuid
+get <uuid> from Patient
+reverse Patient
+select * from Patient where id = 1
+get <uuid> from Patient
+
 # Now try some tests with 10000+ Patients
-# BEWARE order command - it needs to be rewritten.
+# BEWARE order command - use the orderFast command.
 load 10000 Patient0.fhir into Patient
 
