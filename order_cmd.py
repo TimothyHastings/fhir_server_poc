@@ -5,6 +5,10 @@
 # order <collection> on <segment1> with <segment2> on <attribute>
 #
 
+ORDER_ATT = 3
+ORDER_SEG1 = 5
+ORDER_SEG2 = 8
+
 def order_collection(schema, command_line):
     # order <collection> on <attribute>
     if len(command_line) < 3:
@@ -22,9 +26,21 @@ def order_collection(schema, command_line):
 
     # TODO check id
     # TODO more validation
+
+    # Test bubble search and python list ordering algorithms.
+    # TODO remove and use python list ordering, i.e., fast_sort
     if command_line[0] == "order":
         collection.sort(id, False)
     collection.fast_sort(id, False)
 
+    order = len(command_line)
+    if order == ORDER_ATT:
+        pass
+    elif order == ORDER_SEG1:
+        pass
+    elif order == ORDER_SEG2:
+        pass
+    else:
+        pass
 
 
