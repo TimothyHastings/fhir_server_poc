@@ -50,7 +50,7 @@ def load_unique(schema, command_line):
         # Do the id and identifier replacements with the next value
         # id
         replace(resource, "^", str(i+1))
-        # TODO make this a random number in a smaller range so we get duplicates
+        # TODO make this a random number in a smaller range so we get duplicates.
         # identifier value
         replace(resource, "|", str(i+1000))
 
