@@ -1,0 +1,44 @@
+Commands (include spacing)
+--------------------------
+help
+info
+exit
+create <collection>
+results = n
+history
+clear
+reverse <collection>
+randomise <collection>
+select <qualifier> from <collection_list>
+select <qualifier> from <collection_list> where <attribute> <operator> <value>
+select <qualifier> from <collection_list> where <attribute> = <value> : <value>
+select <qualifier> from <collection_list> where <segment> <attribute> <operator> <value>
+select <qualifier> from <collection_list> where <segment> <attribute> = <value> : <value>
+select <qualifier> from <collection_list> where <segment1> with <segment2> <attribute> <operator> <value>
+select <qualifier> from <collection_list> where <segment1> with <segment2> <attribute> = <value> : <value>
+<qualifier>:: *|id|data|count|distinct
+<collection_list>:: <collection>[,<collection>]
+<operator>:: =|!=|>|>=|<|<=
+get <id> from <collection>
+insert json <json> into <collection>
+insert file <filename> into <collection>
+update <collection> json <json> where id = <id>
+update <collection> file <filename> where id = <id>
+copy <collection> to <collection>
+load n <filename> into <collection>
+
+New Commands
+------------
+loadUnique n <filename> into <collection>
+order <collection> on <attribute>
+order <collection> on <segment> <attribute>
+for <collection> add <attribute>
+for <collection> add <segment> with <attribute>
+search <qualifier> from <collection> where <attribute> <operator> <value>
+search <qualifier> from <collection> where <segment> <attribute> <operator> <value>
+index <collection> on <attribute>
+index <collection> on <segment> <attribute>
+selectIndex <qualifier> from <collection> where <attribute> <operator> <value>
+selectIndex <qualifier> from <collection> where <segment> <attribute> <operator> <value
+selectParallel <qualifier> from <collection> where <attribute> <operator> <value>
+selectParallel <qualifier> from <collection> where <segment> <attribute> <operator> <value>

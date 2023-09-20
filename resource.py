@@ -36,12 +36,17 @@ class Resource:
     # Required for order command.
     def get_attribute_value(self, attribute):
         att = get_attribute_value(self.data, attribute)
+        if att.isnumeric():
+            return int(att)
         return att
 
     # Find the attribute in the first segment of FHIR (json).
     # required for order command.
     def get_segment_attribute_value(self, segment, attribute):
         att = get_segment_attribute_value(self.data, segment, attribute)
+        if att.isnumeric():
+            return int(att)
+        return att
 
     # Load a resource from a file.
     def load_file(self, file_name, collection):

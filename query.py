@@ -48,10 +48,10 @@ def test_attribute_value(resource, attribute, operator, value):
         j = json.loads(resource)
         x = j[attribute]
         y = value
-        # TODO: Bug.
+
         if type(x) != str:
             if value.isnumeric():
-                y = float(value)
+                y = int(value)
 
         if operator == "=":
             return x == y

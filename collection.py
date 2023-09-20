@@ -23,6 +23,7 @@ class Collection:
         self.name = name
         self.resources = list()
         self.state = Schema.LOADED
+        self.catalogue = dict()
 
     def __str__(self):
         return self.uuid + ", " + self.name + ", " + self.state
@@ -128,7 +129,7 @@ class Collection:
     # THIS SORT IS TOO SLOW
     # Takes approximately 20 seconds for 1000 records
     # Takes approximately 5 minutes for 10000 records
-    # TODO: Implement a faster Order algorithm - see fast_sort()
+    # NOT USED
     #
     def sort(self, attribute, reverse):
         n = len(self.resources)
@@ -171,8 +172,22 @@ class Collection:
     # Use the python list sort method to do a very fast search.
     # This method takes orders of magnitude less time that the linear sort() method.
     #
-    def fast_sort(self, attribute, reverse):
-        self.resources.sort(key=lambda data: data.get_attribute_value(attribute))
+    def order_attribute(self, attribute, reverse):
+        try:
+            self.resources.sort(key=lambda data: data.get_attribute_value(attribute))
+        except Exception:
+            print("Invalid attribute")
+            return
+        # Reverse the order if descending.
+        if reverse:
+            self.reverse()
+
+    def order_segment_attribute(self, segment, attribute, reverse):
+        try:
+            self.resources.sort(key=lambda data: data.get_segment_attribute_value(segment, attribute))
+        except Exception:
+            print("Invalid segment of attribute")
+            return
         # Reverse the order if descending.
         if reverse:
             self.reverse()
