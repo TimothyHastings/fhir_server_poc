@@ -4,44 +4,16 @@ Author: Tim Hastings, 2023
 """
 import os
 from datetime import datetime
-
+import search_cmd
+from index_cmd import create_index, select_index
 from order_cmd import order_collection
+from parallel_search_cmd import select_parallel
+from search_cmd import set_search_attribute
 from query import *
 from collection import Collection
 from resource import Resource
 from schema import Schema
-
-HELP = \
-    "Commands (include spacing)\n" + \
-    "--------------------------\n" + \
-    "help\n" + \
-    "info\n" + \
-    "exit\n" + \
-    "create <collection>\n" + \
-    "results = n\n" + \
-    "history\n" + \
-    "clear\n" + \
-    "reverse <collection>\n" + \
-    "randomise <collection>\n" + \
-    "order|orderFast <collection> on <attribute>\n" +\
-    "select <qualifier> from <collection_list>\n" + \
-    "select <qualifier> from <collection_list> where <attribute> <operator> <value>\n" + \
-    "select <qualifier> from <collection_list> where <attribute> = <value> : <value>\n" + \
-    "select <qualifier> from <collection_list> where <segment> <attribute> <operator> <value>\n" + \
-    "select <qualifier> from <collection_list> where <segment> <attribute> = <value> : <value>\n" + \
-    "select <qualifier> from <collection_list> where <segment1> with <segment2> <attribute> <operator> <value>\n" + \
-    "select <qualifier> from <collection_list> where <segment1> with <segment2> <attribute> = <value> : <value>\n" + \
-    "selectDistinct <qualifier> from <collection_list> where <attribute> <operator> <value>\n" + \
-    "<qualifier>:: *|id|data|count\n" \
-    "<collection_list>:: <collection>[,<collection>]\n " \
-    "<operator>:: =|!=|>|>=|<|<=\n" + \
-    "get <id> from <collection>\n" + \
-    "insert json <json> into <collection> \n" + \
-    "insert file <filename> into <collection>\n" + \
-    "update <collection> json <json> where id = <id>\n" + \
-    "update <collection> file <filename> where id = <id>\n" + \
-    "copy <collection> to <collection>\n" + \
-    "load n <filename> into <collection>"
+from load_unique_cmd import load_unique
 
 COMMAND_INDEX = 0
 QUALIFIER_INDEX = 1
@@ -49,7 +21,16 @@ FROM_INDEX = 2
 COLLECTION_INDEX = 3
 WHERE_INDEX = 4
 
+#
+#   Read and display the help commands.
+#
+def display_help():
+    fn = open('Commands.txt', 'r')
+    lines = fn.readlines()
 
+    # Strips the newline character
+    for line in lines:
+        print("{}".format(line.strip()))
 #
 # Function to support json with spaces.
 # Future use.
@@ -101,9 +82,7 @@ def cli(schema):
             elif command == "clear":
                 clear_results(schema)
             elif command == "select":
-                select(schema, command_line, False)
-            elif command == "selectDistinct":
-                select(schema, command_line, True)
+                select(schema, command_line)
             elif command == "get":
                 get_resource_by_id(schema, command_line)
             elif command == "insert":
@@ -123,8 +102,20 @@ def cli(schema):
             #   Place functions in new file
             #   Add import at the top of this file.
             #
-            elif command == "order" or "orderFast":
+            elif command == "loadUnique":
+                load_unique(schema, command_line)
+            elif command == "order" or command == "orderReverse":
                 order_collection(schema, command_line)
+            elif command == "for":
+                set_search_attribute(schema, command_line)
+            elif command == "search":  # or command == "searchDistinct":
+                search_cmd.search_attribute(schema, command_line)
+            elif command == "index":
+                create_index(schema, command_line)
+            elif command == "selectIndex":
+                select_index(schema, command_line)
+            elif command == "selectParallel":
+                select_parallel(schema, command_line)
             else:
                 print("Unknown command")
 
@@ -152,6 +143,21 @@ def set_number_of_results(schema, command_line):
 
 
 #
+# Append to result Collection.
+#
+def append_results(schema, results, collection_name):
+    if collection_name == "Result":
+        # Don't append a Result collection to Result, i.e. avoid and infinite loop.
+        return
+    temp_results = schema.get_collection("Result")
+    if temp_results is None:
+        print("Invalid Collection")
+        return
+    for result in results:
+        temp_results.resources.append(result)
+
+
+#
 # Print the results of a select query.
 #
 def print_select(schema, query, results):
@@ -163,29 +169,21 @@ def print_select(schema, query, results):
         print(str(len(results)))
         return
 
+    # Restrict result output
     n = 0
-    temp_results = schema.get_collection("Result")
-    if temp_results is None:
-        print("Invalid Collection")
-        return
-
-    command = ">> "
-    for token in query:
-        command += token + " "
-
     qualifier = query[QUALIFIER_INDEX]
     for resource in results:
         if qualifier == "*":
             print(resource)
-            temp_results.resources.append(resource)
+        elif qualifier == "distinct":
+            print(resource)
+            return
         elif qualifier == "id":
             print(resource.uuid)
-            temp_results.resources.append(resource.uuid)
         elif qualifier == "data":
             print(resource.data)
-            temp_results.resources.append(resource.uuid)
         else:
-            print("print_select(): Invalid select qualifier")
+            print("Invalid select qualifier")
             return
 
         n += 1
@@ -194,7 +192,8 @@ def print_select(schema, query, results):
 
 
 def is_qualifier(qualifier):
-    if qualifier == "*" or qualifier == "data" or qualifier == "id" or qualifier == "count":
+    if qualifier == "*" or qualifier == "data" or qualifier == "id" or \
+            qualifier == "count" or qualifier == "distinct":
         return True
     return False
 
@@ -256,7 +255,7 @@ def is_validate_where(query):
 #
 # Process a select query.
 #
-def select(schema, query, distinct):
+def select(schema, query):
     if not is_valid_select(query):
         return
 
@@ -266,6 +265,10 @@ def select(schema, query, distinct):
         collections = query[COLLECTION_INDEX].split(',')
     else:
         collections.append(query[COLLECTION_INDEX])
+
+    distinct = False
+    if query[QUALIFIER_INDEX] == "distinct":
+        distinct = True
 
     if len(query) == 4:
         # select <qualifier> from <collection_list>
@@ -279,6 +282,7 @@ def select(schema, query, distinct):
                 print(len(collection.resources))
             else:
                 print_select(schema, query, collection.resources)
+                append_results(schema, collection.resources, collection_name)
 
     elif len(query) == 5:
         print("Invalid command")
@@ -296,9 +300,10 @@ def select(schema, query, distinct):
             if not is_operator(operator):
                 return
             value = query[7]
+
             results = get_resources_by_attribute_value(collection, attribute, operator, value, distinct)
             print_select(schema, query, results)
-
+            append_results(schema, results, collection_name)
     elif len(query) == 9:
         # get <qualifier> from <collection_list> where <segment> <attribute> = <value>
         for collection_name in collections:
@@ -315,6 +320,7 @@ def select(schema, query, distinct):
             value = query[8]
             results = get_resources_by_segment_attribute_value(collection, segment, attribute, operator, value)
             print_select(schema, query, results)
+            append_results(schema, results, collection_name)
     elif len(query) == 10:
         # get <qualifier> from <collection_list> where <attribute> = <low> : <high>
         for collection_name in collections:
@@ -331,8 +337,9 @@ def select(schema, query, distinct):
             high = query[9]
             if not is_valid_range(low, high):
                 return
-            results = get_resources_by_attribute_range(collection, attribute, float(low), float(high), False)
+            results = get_resources_by_attribute_range(collection, attribute, float(low), float(high), distinct)
             print_select(schema, query, results)
+            append_results(schema, results, collection_name)
     elif len(query) == 11 and query[6] != "with":
         # get <qualifier> from <collection_list> where <segment> <attribute> = <low> : <high>
         for collection_name in collections:
@@ -353,6 +360,7 @@ def select(schema, query, distinct):
             results = get_resources_by_segment_attribute_range(collection, segment, attribute, float(low),
                                                                float(high))
             print_select(schema, query, results)
+            append_results(schema, results, collection_name)
     elif len(query) == 11 and query[6] == "with":
         # select <qualifier> from <collection_list> where <segment1> <segment2> with <attribute> <operator> <value>
         for collection_name in collections:
@@ -371,6 +379,7 @@ def select(schema, query, distinct):
             results = get_resources_by_2segments_attribute_value(collection, segment1, segment2, attribute, operator,
                                                                  value)
             print_select(schema, query, results)
+            append_results(schema, results, collection_name)
     elif len(query) == 13 and query[6] == "with":
         # select <qualifier> from <collection_list> where <segment1> with <segment2> <attribute> <operator> low : high
         for collection_name in collections:
@@ -390,8 +399,10 @@ def select(schema, query, distinct):
             results = get_resources_by_2segments_attribute_range(collection, segment1, segment2, attribute,
                                                                  float(low), float(high))
             print_select(schema, query, results)
+            append_results(schema, results, collection_name)
     else:
         print("Invalid command - check number of parameters")
+
 
 #
 #   Process a get command.
@@ -573,6 +584,7 @@ def copy_collection(schema, command_line):
         to_collection.resources.append(r)
     to_collection.save()
 
+
 #
 # Reverse a collection's order.
 #
@@ -588,6 +600,7 @@ def reverse_collection(schema, command_line):
 
     collection.reverse()
 
+
 #
 # Randomise a collection's order.
 #
@@ -600,17 +613,15 @@ def randomise_collection(schema, command_line):
 
     collection.randomise()
 
-def display_help():
-    print(HELP)
-
-
+# Display Schema information including version and collections.
 def display_info(schema):
     print(schema.name + ", " + schema.version + " by " + schema.author)
     for collection in schema.collections:
         print(collection.name + ": " + str(len(collection.resources)) + " entries")
 
-
-# Create a new collection
+#
+# Create a new collection.
+#
 def create_collection(schema, command_line):
     # Test if the collection exists
     collection_name = command_line[1]
@@ -652,6 +663,7 @@ def create_results_collection(schema):
     except IOError:
         pass
 
+
 #
 # Display the results temporary table.
 #
@@ -662,6 +674,7 @@ def display_results(schema):
             print(h)
     else:
         print("Invalid Collection, create Result collection")
+
 
 #
 # Clear the result collection.
