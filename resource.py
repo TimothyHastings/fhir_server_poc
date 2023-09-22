@@ -36,6 +36,7 @@ class Resource:
     # Required for order command.
     def get_attribute_value(self, attribute):
         att = get_attribute_value(self.data, attribute)
+        # Handle att does not exist.
         if att is None:
             return None
         if att.isnumeric():
@@ -46,6 +47,7 @@ class Resource:
     # required for order command.
     def get_segment_attribute_value(self, segment, attribute):
         att = get_segment_attribute_value(self.data, segment, attribute)
+        # Handle att does not exist.
         if att is None:
             return None
         if att.isnumeric():
