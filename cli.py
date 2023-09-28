@@ -5,7 +5,7 @@ Author: Tim Hastings, 2023
 import os
 from datetime import datetime
 import search_cmd
-from index_cmd import create_index, select_index
+from index_cmd import create_index, select_index, show_catalogue
 from order_cmd import order_collection
 from parallel_search_cmd import select_parallel
 from search_cmd import set_search_attribute
@@ -114,6 +114,8 @@ def cli(schema):
                 create_index(schema, command_line)
             elif command == "selectIndex":
                 select_index(schema, command_line)
+            elif command == "showCat":
+                show_catalogue(schema, command_line)
             elif command == "selectParallel":
                 select_parallel(schema, command_line)
             else:

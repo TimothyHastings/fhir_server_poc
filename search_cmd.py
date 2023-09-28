@@ -10,12 +10,19 @@ for <collection> add <segment> with <attribute>
 Commands to search a collection:
 search <collection> where <attribute> <operator> <value>
 searchDistinct <collection> where <attribute> <operator> <value>
+
+Examples:
+
+for Patient100K add id
+search * from Patient100K where id = 50000
+
+for Patient add identifier with value
+search * from Patient100K where identifier = 100000
 """
 #
 # Set a search attribute.
 # for <collection> add <attribute>
 # for <collection> add <segment> with <attribute>
-# TODO: Bug if invalid attribute
 #
 def set_search_attribute(schema, command_line):
     collection_name = command_line[1]
@@ -33,6 +40,9 @@ def set_search_attribute(schema, command_line):
         attribute = command_line[3]
         for resource in collection.resources:
             val = resource.get_attribute_value(attribute)
+            if val is None:
+                print("Invalid attribute")
+                return
             resource.search_field = val
 
     elif len(command_line) == 6:
@@ -41,18 +51,20 @@ def set_search_attribute(schema, command_line):
         segment = command_line[3]
         for resource in collection.resources:
             val = resource.get_segment_attribute_value(segment, attribute)
+            if val is None:
+                print("Invalid attribute")
+                return
             resource.search_field = val
     else:
         print("Invalid set search command")
 
 #
 # search <qualifier> from <collection> where <attribute> <operator> <value>
-# TODO: search <qualifier> from <collection> where <segment> <attribute> <operator> <value> /
-#  e.g. select * from Patient where identifier value = 1001
+# Not required search <qualifier> from <collection> where <segment> <attribute> <operator> <value>
+# This command is not needed as the search criteria is set by the for command.
 #
 def search_attribute(schema, command_line):
     collection_name = command_line[3]
-    print(collection_name)
     collection = schema.get_collection(collection_name)
 
     if collection is None:
@@ -76,9 +88,6 @@ def search_attribute(schema, command_line):
                 print(resource)
                 if distinct:
                     break
-    elif len(command_line) == 9:
-        # search <qualifier> from <collection> where <segment> <attribute> <operator> <value>
-        pass
     else:
         print("Incorrect number of arguments")
 

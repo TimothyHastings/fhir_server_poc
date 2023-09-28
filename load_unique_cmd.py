@@ -4,18 +4,30 @@ Author: Tim Hastings, 2023
 """
 
 #
-# loadUnique n <filename> into <collection>
+# loadUnique n <filename> into <collection> |duplicate|
+# duplicate is optional to create identifier value duplicates.
+# This is useful for a Patient having 1 or more Observations
 # loadUnique 10000 PatientTemplate.fhir into Patient
 # loadUnique 10000 ObservationTemplate.fhir into Observation
-# Uses a template resource file that includes special characters
-# ^ and | to do replacements of id and identifier value.
-# TODO: Make the 'identifier value' random using a range that is 50% so there may be duplicates
+# Uses a template resource file that uses #tag replacements.
 #
+import random
+
 from resource import Resource
 
-def load_unique(schema, command_line):
 
-    if not len(command_line) == 5:
+def load_unique(schema, command_line):
+    duplicate = False
+    length = len(command_line)
+    if length == 6:
+        length -= 1
+        if command_line[5] == "duplicate":
+            duplicate = True
+        else:
+            print("Invalid option")
+            return
+
+    if not length == 5:
         print("Invalid number of arguments")
         return
 
@@ -47,27 +59,31 @@ def load_unique(schema, command_line):
             print("Cannot find template file")
             return
 
-        # Do the id and identifier replacements with the next value
-        # id
-        replace(resource, "^", str(i+1))
-        # TODO make this a random number in a smaller range so we get duplicates.
-        # identifier value
-        replace(resource, "|", str(i+1000))
+        # identifier_value replacement - NOTE do this first to void #id replacement conflicts.
+        # Option to replace with random duplicates.
+
+        if duplicate:
+            rn = random.randint(1, n // 2)
+            replace(resource, "#identifier_value", str(1000 + rn))
+        else:
+            replace(resource, "#identifier_value", str(1000 + i+1))
+
+        # id replacement
+        # id is not part of FHIR and used as a unique number.
+        replace(resource, "#id", str(i+1))
+
+        # family_name example of how to replace other fields.
+        replace(resource, "#name_family", "Family " + str(i+1))
 
         # Save the resource to the file system and in memory collection.
         resource.save()
         collection.add_resource(resource)
 
+
 #
-#   Replace a character in the FHIR
-#   string replace will not work for some reason!
+#   Replace a string - used for #tags
+#   Note that the replace method return a new string.
 #
 def replace(resource, a, b):
-    l = len(resource.data)
-    temp = ""
-    for i in range(l):
-        if resource.data[i] == a:
-            temp += b
-        else:
-            temp += resource.data[i]
+    temp = resource.data.replace(a, b)
     resource.data = temp

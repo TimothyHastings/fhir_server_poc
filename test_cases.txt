@@ -1,7 +1,6 @@
 # Create Patient with 10K unique patient ids and identifiers.
 create Patient
 loadUnique 10000 PatientTemplate.fhir into Patient
-loadUnique 2 PatientTemplate.fhir into Test
 select count from Patient
 # Restrict number of results
 results = 50
@@ -42,23 +41,289 @@ select distinct from Patient where id = 10000
 randomise Patient
 for Patient add id
 select * from Patient
-search distinct from Patient where id = 1
+search distinct from Patient where id = 0
 search distinct from Patient where id = 4900
 search distinct from Patient where id = 10000
 
 # Test index commands
 index Patient on id
 select * from Patient
-selectIndex distinct from Patient where id = 1
+selectIndex distinct from Patient where id = 0
 selectIndex distinct from Patient where id = 4900
 selectIndex distinct from Patient where id = 10000
 
 # Test Parallel commands
-selectParallel distinct from Patient where id = 1
+selectParallel distinct from Patient where id = 0
 selectParallel distinct from Patient where id = 2000
 selectParallel distinct from Patient where id = 4000
 selectParallel distinct from Patient where id = 6000
 selectParallel distinct from Patient where id = 10000
 
+# Join command
+create PatientJ
+create ObservationJ
+loadUnique 10 PatientTemplate.fhir into PatientJ
+loadUnique 10 ObservationTemplate.fhir into ObservationJ duplicate
+select * from PatientJ,ObservationJ where identifier value = 1002
 
+#
+# Benchmark Tests
+#
+create Patient1K
+create Patient10K
+create Patient100K
+loadUnique 1000 PatientTemplate.fhir into Patient1K
+loadUnique 10000 PatientTemplate.fhir into Patient10K       4327.36 ms
+loadUnique 100000 PatientTemplate.fhir into Patient100K
 
+###########################################
+#
+# Patient1K Tests
+#
+###########################################
+
+# Baseline Tests
+select * from Patient1K where id = 1
+select * from Patient1K where id = 500
+select * from Patient1K where id = 1000
+select distinct from Patient1K where id = 1
+select distinct from Patient1K where id = 500
+select distinct from Patient1K where id = 1000
+
+select * from Patient1K where identifier value = 1001
+select * from Patient1K where identifier value = 1500
+select * from Patient1K where identifier value = 2000
+select distinct from Patient1K where identifier value = 1001
+select distinct from Patient1K where identifier value = 1500
+select distinct from Patient1K where identifier value = 2000
+
+# Order Tests
+order Patient1K on id
+select * from Patient1K where id = 1
+select * from Patient1K where id = 500
+select * from Patient1K where id = 1000
+select distinct from Patient1K where id = 1
+select distinct from Patient1K where id = 500
+select distinct from Patient1K where id = 1000
+order Patient1K on identifier value
+select * from Patient1K where identifier value = 1001
+select * from Patient1K where identifier value = 1500
+select * from Patient1K where identifier value = 2000
+select distinct from Patient1K where identifier value = 1001
+select distinct from Patient1K where identifier value = 1500
+select distinct from Patient1K where identifier value = 2000
+
+# Search Tests
+for Patient1K add id
+search * from Patient1K where id = 1
+search * from Patient1K where id = 500
+search * from Patient1K where id = 1000
+search distinct from Patient1K where id = 1
+search distinct from Patient1K where id = 100
+search distinct from Patient1K where id = 1000
+for Patient1K add identifier with value
+search * from Patient1K where identifier = 1001
+search * from Patient1K where identifier = 1500
+search * from Patient1K where identifier = 2000
+search distinct from Patient1K where identifier = 1001
+search distinct from Patient1K where identifier = 1500
+search distinct from Patient1K where identifier = 2000
+
+# Index Tests
+index Patient1K on id
+selectIndex * from Patient1K where id = 1
+selectIndex * from Patient1K where id = 500
+selectIndex * from Patient1K where id = 1000
+selectIndex distinct from Patient1K where id = 1
+selectIndex distinct from Patient1K where id = 500
+selectIndex distinct from Patient1K where id = 1000
+index Patient1K on identifier value
+selectIndex * from Patient1K where identifier value = 1001
+selectIndex * from Patient1K where identifier value = 1500
+selectIndex * from Patient1K where identifier value = 2000
+selectIndex distinct from Patient1K where identifier value = 1001
+selectIndex distinct from Patient1K where identifier value = 1500
+selectIndex distinct from Patient1K where id = 2000
+
+# Parallel Tests - order to give best chance
+order Patient1K on id
+selectParallel * from Patient1K where id = 125
+selectParallel * from Patient1K where id = 375
+selectParallel * from Patient1K where id = 850
+selectParallel distinct from Patient1K where id = 1250
+selectParallel distinct from Patient1K where id = 1375
+selectParallel distinct from Patient1K where id = 1850
+selectParallel * from Patient1K where identifier value = 125
+selectParallel * from Patient1K where identifier value = 375
+selectParallel * from Patient1K where identifier value = 850
+selectParallel distinct from Patient1K where identifier value = 1250
+selectParallel distinct from Patient1K where identifier value = 1375
+selectParallel distinct from Patient1K where id = 1850
+
+###########################################
+#
+# Patient10K Tests
+#
+###########################################
+
+# Baseline Tests
+select * from Patient10K where id = 1
+select * from Patient10K where id = 5000
+select * from Patient10K where id = 10000
+select distinct from Patient10K where id = 1
+select distinct from Patient10K where id = 5000
+select distinct from Patient10K where id = 10000
+
+select * from Patient10K where identifier value = 1001
+select * from Patient10K where identifier value = 5000
+select * from Patient10K where identifier value = 10000
+select distinct from Patient10K where identifier value = 1001
+select distinct from Patient10K where identifier value = 5000
+select distinct from Patient10K where identifier value = 10000
+
+# Order Tests
+order Patient10K on id
+select * from Patient10K where id = 1
+select * from Patient10K where id = 5000
+select * from Patient10K where id = 10000
+select distinct from Patient10K where id = 1
+select distinct from Patient10K where id = 5000
+select distinct from Patient10K where id = 10000
+order Patient10K on identifier value
+select * from Patient10K where identifier value = 1001
+select * from Patient10K where identifier value = 5000
+select * from Patient10K where identifier value = 10000
+select distinct from Patient10K where identifier value = 1001
+select distinct from Patient10K where identifier value = 5000
+select distinct from Patient10K where identifier value = 10000
+
+# Search Tests
+for Patient10K add id
+search * from Patient10K where id = 1
+search * from Patient10K where id = 5000
+search * from Patient10K where id = 10000
+search distinct from Patient10K where id = 1
+search distinct from Patient10K where id = 5000
+search distinct from Patient10K where id = 10000
+for Patient10K add identifier with value
+search * from Patient10K where identifier = 1001
+search * from Patient10K where identifier = 5000
+search * from Patient10K where identifier = 10000
+search distinct from Patient10K where identifier = 1001
+search distinct from Patient10K where identifier = 5000
+search distinct from Patient10K where identifier = 10000
+
+# Index Tests
+index Patient10K on id
+selectIndex * from Patient10K where id = 1
+selectIndex * from Patient10K where id = 5000
+selectIndex * from Patient10K where id = 10000
+selectIndex distinct from Patient10K where id = 1
+selectIndex distinct from Patient10K where id = 5000
+selectIndex distinct from Patient10K where id = 10000
+index Patient10K on identifier value
+selectIndex * from Patient10K where identifier value = 1001
+selectIndex * from Patient10K where identifier value = 5000
+selectIndex * from Patient10K where identifier value = 10000
+selectIndex distinct from Patient10K where identifier value = 1001
+selectIndex distinct from Patient10K where identifier value = 5000
+selectIndex distinct from Patient10K where id = 10000
+
+# Parallel Tests - order to give best chance
+order Patient10K on id
+selectParallel * from Patient10K where id = 1250
+selectParallel * from Patient10K where id = 3750
+selectParallel * from Patient10K where id = 8500
+selectParallel distinct from Patient10K where id = 1250
+selectParallel distinct from Patient10K where id = 3750
+selectParallel distinct from Patient10K where id = 8500
+selectParallel * from Patient10K where identifier value = 1250
+selectParallel * from Patient10K where identifier value = 3750
+selectParallel * from Patient10K where identifier value = 8500
+selectParallel distinct from Patient10K where identifier value = 1250
+selectParallel distinct from Patient10K where identifier value = 3750
+selectParallel distinct from Patient10K where id = 8500
+
+###########################################
+#
+# Patient100K Tests
+#
+###########################################
+
+# Baseline Tests
+select * from Patient100K where id = 1
+select * from Patient100K where id = 50000
+select * from Patient100K where id = 100000
+select distinct from Patient100K where id = 1
+select distinct from Patient100K where id = 50000
+select distinct from Patient100K where id = 100000
+order Patient100K on id
+select * from Patient100K where identifier value = 1001
+select * from Patient100K where identifier value = 50000
+select * from Patient100K where identifier value = 100000
+select distinct from Patient100K where identifier value = 1001
+select distinct from Patient100K where identifier value = 50000
+select distinct from Patient100K where identifier value = 100000
+
+# Order Tests
+order Patient100K on id
+select * from Patient100K where id = 1
+select * from Patient100K where id = 50000
+select * from Patient100K where id = 100000
+select distinct from Patient100K where id = 1
+select distinct from Patient100K where id = 50000
+select distinct from Patient100K where id = 100000
+order Patient100K on identifier value
+select * from Patient100K where identifier value = 1001
+select * from Patient100K where identifier value = 50000
+select * from Patient100K where identifier value = 100000
+select distinct from Patient100K where identifier value = 1001
+select distinct from Patient100K where identifier value = 50000
+select distinct from Patient100K where identifier value = 100000
+
+# Search Tests
+for Patient100K add id
+search * from Patient100K where id = 1
+search * from Patient100K where id = 50000
+search * from Patient100K where id = 100000
+search distinct from Patient100K where id = 1
+search distinct from Patient100K where id = 50000
+search distinct from Patient100K where id = 100000
+for Patient100K add identifier with value
+search * from Patient100K where identifier = 1001
+search * from Patient100K where identifier = 50000
+search * from Patient100K where identifier = 100000
+search distinct from Patient100K where identifier = 1001
+search distinct from Patient100K where identifier = 50000
+search distinct from Patient100K where identifier = 100000
+
+# Index Tests
+index Patient100K on id
+selectIndex * from Patient100K where id = 1001
+selectIndex * from Patient100K where id = 50000
+selectIndex * from Patient100K where id = 100000
+selectIndex distinct from Patient100K where id = 1001
+selectIndex distinct from Patient100K where id = 50000
+selectIndex distinct from Patient100K where id = 100000
+index Patient100K on identifier value
+selectIndex * from Patient100K where identifier value = 1001
+selectIndex * from Patient100K where identifier value = 50000
+selectIndex * from Patient100K where identifier value = 100000
+selectIndex distinct from Patient100K where identifier value = 1001
+selectIndex distinct from Patient100K where identifier value = 50000
+selectIndex distinct from Patient100K where id = 100000
+
+# Parallel Tests - order to give best chance
+order Patient100K on id
+selectParallel * from Patient100K where id = 1250
+selectParallel * from Patient100K where id = 37500
+selectParallel * from Patient100K where id = 85000
+selectParallel distinct from Patient100K where id = 1250
+selectParallel distinct from Patient100K where id = 37500
+selectParallel distinct from Patient100K where id = 85000
+selectParallel * from Patient100K where identifier value = 1250
+selectParallel * from Patient100K where identifier value = 37500
+selectParallel * from Patient100K where identifier value = 85000
+selectParallel distinct from Patient100K where identifier value = 1250
+selectParallel distinct from Patient100K where identifier value = 37500
+selectParallel distinct from Patient100K where id = 85000

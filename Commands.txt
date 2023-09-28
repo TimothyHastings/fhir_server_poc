@@ -29,16 +29,18 @@ load n <filename> into <collection>
 
 New Commands
 ------------
-loadUnique n <filename> into <collection>
+loadUnique n <filename> into <collection> |duplicate|
 order <collection> on <attribute>
 order <collection> on <segment> <attribute>
 for <collection> add <attribute>
 for <collection> add <segment> with <attribute>
 search <qualifier> from <collection> where <attribute> <operator> <value>
-search <qualifier> from <collection> where <segment> <attribute> <operator> <value>
 index <collection> on <attribute>
 index <collection> on <segment> <attribute>
+showCat n <collection>
+selectIndex <qualifier> from <collection>
 selectIndex <qualifier> from <collection> where <attribute> <operator> <value>
-selectIndex <qualifier> from <collection> where <segment> <attribute> <operator> <value
+selectIndex <qualifier> from <collection> where <segment> <attribute> <operator> <value>
+selectParallel <qualifier> from <collection>
 selectParallel <qualifier> from <collection> where <attribute> <operator> <value>
 selectParallel <qualifier> from <collection> where <segment> <attribute> <operator> <value>

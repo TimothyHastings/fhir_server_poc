@@ -1,6 +1,6 @@
 {
   "resourceType" : "Patient",
-  "id" : ^,
+  "id" : #id,
   "text" : {
     "status" : "generated"
     },
@@ -13,7 +13,7 @@
       }]
     },
     "system" : "urn:oid:1.2.36.146.595.217.0.1",
-    "value" : "|",
+    "value" : "#identifier_value",
     "period" : {
       "start" : "2001-05-06"
     },
@@ -24,7 +24,7 @@
   "active" : true,
   "name" : [{
     "use" : "official",
-    "family" : "Chalmers",
+    "family" : "#name_family",
     "given" : ["Peter",
     "James"]
   },

@@ -29,8 +29,9 @@ def get_segment_attribute_value(resource, segment, attribute):
     except (KeyError, TypeError):
         return None
 
-
+#
 # Get an attribute value using segment1 and segment 2.
+#
 def get_2segments_attribute_value(resource, segment1, segment2, attribute):
     try:
         part1 = get_attribute_value(resource, segment1)

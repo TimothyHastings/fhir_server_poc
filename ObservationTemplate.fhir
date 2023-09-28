@@ -1,13 +1,13 @@
 {
   "resourceType" : "Observation",
-  "id" : "^",
+  "id" : #id,
   "text" : {
     "status" : "generated"
     },
   "identifier" : [{
     "use" : "official",
     "system" : "http://www.bmc.nl/zorgportal/identifiers/observations",
-    "value" : "|"
+    "value" : #identifier_value
   }],
   "status" : "final",
   "code" : {

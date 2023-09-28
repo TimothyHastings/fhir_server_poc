@@ -27,7 +27,7 @@ class Schema:
     def __init__(self, name):
         self.uuid = str(uuid.uuid4())
         self.name = name
-        self.version = "0.2"
+        self.version = "0.3"
         self.author = "Tim Hastings (C), 2023"
         self.collections = list()
         self.number_of_results = 10
