@@ -156,19 +156,23 @@ def get_resources_by_attribute_range(collection, attribute, low, high, distinct)
 
 
 # Get all resources that have a segment attribute where value operator value = True
-def get_resources_by_segment_attribute_value(collection, segment, attribute, operator, value):
+def get_resources_by_segment_attribute_value(collection, segment, attribute, operator, value, distinct):
     result = list()
     for resource in collection.resources:
         if test_segment_attribute_value(resource.data, segment, attribute, operator, value):
             result.append(resource)
+            if distinct:
+                break
     return result
 
 
-def get_resources_by_2segments_attribute_value(collection, segment1, segment2, attribute, operator, value):
+def get_resources_by_2segments_attribute_value(collection, segment1, segment2, attribute, operator, value, distinct):
     result = list()
     for resource in collection.resources:
         if test_2segments_attribute_value(resource.data, segment1, segment2, attribute, operator, value):
             result.append(resource)
+            if distinct:
+                break
     return result
 
 

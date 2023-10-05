@@ -72,9 +72,9 @@ select * from PatientJ,ObservationJ where identifier value = 1002
 create Patient1K
 create Patient10K
 create Patient100K
-loadUnique 1000 PatientTemplate.fhir into Patient1K
-loadUnique 10000 PatientTemplate.fhir into Patient10K       4327.36 ms
-loadUnique 100000 PatientTemplate.fhir into Patient100K
+loadUnique 1000 PatientTemplate.fhir into Patient1K           453.12 ms
+loadUnique 10000 PatientTemplate.fhir into Patient10K        4327.36 ms
+loadUnique 100000 PatientTemplate.fhir into Patient100K     44165.21 ms
 
 ###########################################
 #
@@ -83,6 +83,8 @@ loadUnique 100000 PatientTemplate.fhir into Patient100K
 ###########################################
 
 # Baseline Tests
+# For randomise baseline tests
+randomise Patient1K
 select * from Patient1K where id = 1
 select * from Patient1K where id = 500
 select * from Patient1K where id = 1000
@@ -98,7 +100,7 @@ select distinct from Patient1K where identifier value = 1500
 select distinct from Patient1K where identifier value = 2000
 
 # Order Tests
-order Patient1K on id
+
 select * from Patient1K where id = 1
 select * from Patient1K where id = 500
 select * from Patient1K where id = 1000
@@ -167,6 +169,8 @@ selectParallel distinct from Patient1K where id = 1850
 ###########################################
 
 # Baseline Tests
+# For randomise baseline tests
+randomise Patient10K
 select * from Patient10K where id = 1
 select * from Patient10K where id = 5000
 select * from Patient10K where id = 10000
@@ -251,13 +255,15 @@ selectParallel distinct from Patient10K where id = 8500
 ###########################################
 
 # Baseline Tests
+# For randomise baseline tests
+randomise Patient100K
 select * from Patient100K where id = 1
 select * from Patient100K where id = 50000
 select * from Patient100K where id = 100000
 select distinct from Patient100K where id = 1
 select distinct from Patient100K where id = 50000
 select distinct from Patient100K where id = 100000
-order Patient100K on id
+
 select * from Patient100K where identifier value = 1001
 select * from Patient100K where identifier value = 50000
 select * from Patient100K where identifier value = 100000

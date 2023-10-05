@@ -320,7 +320,7 @@ def select(schema, query):
             if not is_operator(operator):
                 return
             value = query[8]
-            results = get_resources_by_segment_attribute_value(collection, segment, attribute, operator, value)
+            results = get_resources_by_segment_attribute_value(collection, segment, attribute, operator, value, distinct)
             print_select(schema, query, results)
             append_results(schema, results, collection_name)
     elif len(query) == 10:
@@ -379,7 +379,7 @@ def select(schema, query):
                 return
             value = query[10]
             results = get_resources_by_2segments_attribute_value(collection, segment1, segment2, attribute, operator,
-                                                                 value)
+                                                                 value, distinct)
             print_select(schema, query, results)
             append_results(schema, results, collection_name)
     elif len(query) == 13 and query[6] == "with":
